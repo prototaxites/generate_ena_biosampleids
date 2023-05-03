@@ -7,8 +7,9 @@ import optparse
 import datetime
 import xml.etree.ElementTree as ElementTree
 import re
+import json
 
-dev_environment = 
+# dev_environment = 
 
 
 
@@ -29,7 +30,13 @@ def copy_checklist_items(field_dict, parent_dict, child_dict):
 
     for parent_key, parent_val in parent_dict.items():
         if parent_key not in child_dict.keys():
-            child_dict[parent_key] = parent_val
+
+            if parent_key == "sex":
+                child_dict["host sex"] = parent_val
+            elif parent_key == "lifestage":
+                child_dict["host life stage"] = parent_val
+            else:
+                child_dict[parent_key] = parent_val
 
     mandatory_missing = []
     recommended_missing = []
@@ -109,7 +116,7 @@ def validate_samples_with_checklist(field_dict, samples_dict):
 def main():
 
     parser = optparse.OptionParser()
-    parser.add_option('-a', '--apikey', 
+    parser.add_option('-a', '--api_credentials', 
                   dest="api", 
                   default="",
                   )
@@ -142,8 +149,13 @@ def main():
     global log_file 
     log_file = f'cobiont_{project_name}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
 
+    with open(options.api) as json_file:
+        enviromment_params = json.load(json_file)
+
+    # TODO: Check credentials in valid format.
+
     # Check connection to local tol-sdk
-    ena_datasource = EnaDataSource(dev_environment)
+    ena_datasource = EnaDataSource(enviromment_params['credentials'])
 
     # Import primary metagenomes summary
     df_primary = pd.read_csv(options.data)
@@ -167,23 +179,26 @@ def main():
         primary_dict = {
             'title': [primary_uuid, None],
             'taxon_id': [primary_metagenome["metagenome_taxid"], None],
-            'scientific_name': [primary_metagenome["metagenome_taxname"], None],
-            # 'lifestage': ["not provided", None],
+            'host scientific name': [primary_metagenome["metagenome_taxname"], None],
+            'broad-scale environmental context': [primary_metagenome["broad-scale environmental context"], None],
+            'local environmental context': [primary_metagenome["local environmental context"], None],
+            'environmental medium': [primary_metagenome["environmental medium"], None],
+            'ENA-CHECKLIST': ['ERC000013', None],
             'tolid': [primary_metagenome["metagenome_tolid"], None]
         }
 
-        log("")
-        log("Check primary (tol) checklist")
-        log("")
+        log("Check primary checklist")
         # Download tol checklist
-        tol_field_dict = ena_datasource.get_xml_checklist('ERC000053')
+        tol_field_dict = ena_datasource.get_xml_checklist('ERC000013')
 
+        log("Copy primary checklist items")
         # Copy extra host fields, extract data from fields required to populate tol checklist
         primary_sample_dict = copy_checklist_items(tol_field_dict, host_sample_dict, primary_dict)
 
         primary_samples_dict[primary_uuid] = primary_sample_dict
 
-        # Validate 
+        # Validate
+        log("Validate primary checklist items")
         tol_validation_passed = validate_samples_with_checklist(tol_field_dict, primary_samples_dict)
 
 
@@ -194,6 +209,7 @@ def main():
 
         if primary_metagenome["binned_path"]:
             # binned metagenome checklist
+            log("Load binned checklist")
             bm_field_dict = ena_datasource.get_xml_checklist('ERC000050')
 
             #   extract data from fields required to populate binned metagenome checklist
@@ -241,12 +257,14 @@ def main():
                     binned_dict['completeness score'][0] = 100
 
                 # Copy extra host fields, extract data from fields required to populate tol checklist
+                log(f"Copy checklist items for binned {index}")
                 binned_sample_dict = copy_checklist_items(bm_field_dict, primary_dict, binned_dict)
 
                 binned_samples_dict[binned_sample_dict['title'][0]] = binned_sample_dict
                 binned_mag_samples_dict[binned_sample_dict['title'][0]] = binned_sample_dict
             
-            # Validate 
+            # Validate
+            log(f"Validate binned checklist items")
             binned_validation_passed = validate_samples_with_checklist(bm_field_dict, binned_samples_dict)
 
         if primary_metagenome["mag_path"]:
@@ -295,15 +313,17 @@ def main():
                     mag_dict['completeness score'][0] = 100
 
                 # Copy extra host fields, extract data from fields required to populate tol checklist
+                log(f"Copy checklist items for MAG {index}")
                 mag_sample_dict = copy_checklist_items(mag_field_dict, primary_dict, mag_dict)
 
                 mag_samples_dict[mag_sample_dict['title'][0]] = mag_sample_dict
                 binned_mag_samples_dict[mag_sample_dict['title'][0]] = mag_sample_dict
             
             # Validate 
+            log(f"Validate mag checklist items")
             mag_validation_passed = validate_samples_with_checklist(mag_field_dict, mag_samples_dict)
 
-        # Check validation - if fails do not submit:
+        # # Check validation - if fails do not submit:
         if tol_validation_passed and binned_validation_passed and mag_validation_passed:
 
             # binned_mag_samples_dict = dict(list(binned_samples_dict.items()) + list(mag_samples_dict.items()))
@@ -313,55 +333,81 @@ def main():
             ## 1. converts to xml, (creates sample id - UUID)
             ## 2. submits to ena
             ## 3. intepret response xml, appends biosampleid to sample dict
-            primary_submission_dict = ena_datasource.generate_ena_ids_for_samples(uuid.uuid4(), primary_samples_dict)
+            log(f"Generate ENA IDs for primary samples")
+            primary_submission_success, primary_submission_dict = ena_datasource.generate_ena_ids_for_samples(uuid.uuid4(), primary_samples_dict)
 
-            primary_metagenome_dict = primary_submission_dict[primary_uuid]
-
-            # Amend binned and mags with returned biosample IDs.
-            if primary_metagenome_dict["biosample_accession"][0]:
-
-
-                updated_binned_mag_samples_dict = {}
-                for key, val in binned_mag_samples_dict.items():
-                    # print(val['taxon_id'][0])
-                    # if val['taxon_id'][0] == 2066855:
-                    val["sample derived from"] = [primary_metagenome_dict["biosample_accession"][0],None]
-                    updated_binned_mag_samples_dict[key] = val
-
-                # Submit manifest of all binned and MAGs.
-                binned_mag_submission_dict = ena_datasource.generate_ena_ids_for_samples(uuid.uuid4(), updated_binned_mag_samples_dict)
-
-                # Build output summarising generated biosample IDs (primary, binned, MAGs).
-
-                cols=['Type', 'ToLID', 'Biosample Accession']
-                samples=[["primary", primary_metagenome_dict["tolid"][0], primary_metagenome_dict["biosample_accession"][0]]]
-
-                # output_df = pd.DataFrame(columns=['Type', 'ToLID', 'Biosample Accession'])
-                # output_row = pd.DataFrame({'Type': "primary", 'ToLID': primary_metagenome_dict["tolid"][0],'Biosample Accession': primary_metagenome_dict["biosample_accession"][0]})
-                # output_df = pd.concat([output_df, output_row], axis=0, ignore_index=True)
-
-                for key, val in binned_mag_submission_dict.items():
-                    samples.append([val['title'][0].split("-")[6], val["tolid"][0], val["biosample_accession"][0]])
-                    # output_row = pd.DataFrame({'Type': val['title'][0].split("-")[6], 'ToLID': val["tolid"][0],'Biosample Accession': val["biosample_accession"][0]})
-                    # output_df = pd.concat([output_df, output_row], axis=0, ignore_index=True)
-
-                output_df = pd.DataFrame(samples, columns = cols)
-
-                output_df.to_csv(output_file_name,index=False)
-
-                # method to convert submission response xml into biosample summary list.
-                # print(primary_dict["tolid"][0])
-                # primary_biosampleid = primary_dict["biosample_accession"][0]
-                # print(primary_biosampleid)
-
-                # for key, dict in binned_mag_submission_dict.items():
-                    # print(dict["tolid"][0])
-                    # print(dict["biosample_accession"][0])
-            
+            # binned_mag_submission_dict - read errors from this rather than 
+            if not primary_submission_success:
+                log(f"ENA generation failed for primary")
+                # print(primary_submission_dict)
+                for val in primary_submission_dict.values():
+                    log(val)
             else:
-                log("Biosample accession not returned for primary metagenome")
+                log(f"ENA generation succeeded for primary")
+                primary_metagenome_dict = primary_submission_dict[primary_uuid]
+
+                # Amend binned and mags with returned biosample IDs.
+                if primary_metagenome_dict["biosample_accession"][0]:
+
+
+                    updated_binned_mag_samples_dict = {}
+                    for key, val in binned_mag_samples_dict.items():
+                        # print(val['taxon_id'][0])
+                        # if val['taxon_id'][0] == 2066855:
+                        val["sample derived from"] = [primary_metagenome_dict["biosample_accession"][0],None]
+                        updated_binned_mag_samples_dict[key] = val
+
+                    # Submit manifest of all binned and MAGs.
+                    log(f"Generate ENA IDs for binned/MAG samples")
+                    binned_mag_submission_success, binned_mag_submission_dict = ena_datasource.generate_ena_ids_for_samples(uuid.uuid4(), updated_binned_mag_samples_dict)
+
+                    # binned_mag_submission_dict - read errors from this rather than 
+                    if not binned_mag_submission_success:
+                        log(f"ENA generation failed for binned/mag")
+                        # print(binned_mag_submission_dict)
+                        for val in binned_mag_submission_dict.values():
+                            log(val)
+                    else:
+                        log(f"ENA generation succeeded for binned/mag")
+                        # Build output summarising generated biosample IDs (primary, binned, MAGs).
+
+                        cols=['Type', 'ToLID', 'Biosample Accession']
+                        samples=[["primary", primary_metagenome_dict["tolid"][0], primary_metagenome_dict["biosample_accession"][0]]]
+
+                        # output_df = pd.DataFrame(columns=['Type', 'ToLID', 'Biosample Accession'])
+                        # output_row = pd.DataFrame({'Type': "primary", 'ToLID': primary_metagenome_dict["tolid"][0],'Biosample Accession': primary_metagenome_dict["biosample_accession"][0]})
+                        # output_df = pd.concat([output_df, output_row], axis=0, ignore_index=True)
+
+                        for key, val in binned_mag_submission_dict.items():
+                            samples.append([val['title'][0].split("-")[6], val["tolid"][0], val["biosample_accession"][0]])
+                            # output_row = pd.DataFrame({'Type': val['title'][0].split("-")[6], 'ToLID': val["tolid"][0],'Biosample Accession': val["biosample_accession"][0]})
+                            # output_df = pd.concat([output_df, output_row], axis=0, ignore_index=True)
+
+                        output_df = pd.DataFrame(samples, columns = cols)
+                        log(f"Output biosamples")
+                        output_df.to_csv(output_file_name,index=False)
+
+                        # method to convert submission response xml into biosample summary list.
+                        # print(primary_dict["tolid"][0])
+                        # primary_biosampleid = primary_dict["biosample_accession"][0]
+                        # print(primary_biosampleid)
+
+                        # for key, dict in binned_mag_submission_dict.items():
+                            # print(dict["tolid"][0])
+                            # print(dict["biosample_accession"][0])
+                
+                else:
+                    log("Biosample accession not returned for primary metagenome")
 
 #     # tol_sdk - tests - copy and update test methods from manifest_utils, xml_utils
+
+# Run update submission
+#     set host_taxid - to pull
+#         - dont pass organism name
+#         -- sample symbiont of. 
+
+
+
 
 if __name__ == "__main__":
     main()
