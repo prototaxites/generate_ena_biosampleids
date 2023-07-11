@@ -6,18 +6,11 @@ import pandas as pd
 import datetime
 import json
 
-# headers = {
-#        'accept': 'application/json',
-#        #'api-key' : 'kdyne83bcpaxec7b39dxmew86napj3e4'
-#        'api-key' : 'kro93bxm49f7qa651nvytlj3sxbgmr8r'
-# }
 headers = {}
 project_name = ""
 log_file = ""
 replace_policy = ""
 api_url = ""
-#api_url = "https://submissions-staging.tol.sanger.ac.uk/api/v1/"
-# api_url = "https://submissions.tol.sanger.ac.uk/api/v1/"
 
 def log(message):
     curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
