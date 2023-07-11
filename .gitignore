@@ -1,4 +1,7 @@
+/past_logs
 /old
-dev_environment.json
-live_environment.json
+/test_output
+*.json
 *.txt
+INPROGRES.md
+*.csv
