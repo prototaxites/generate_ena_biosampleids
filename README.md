@@ -13,8 +13,8 @@ Credentials are required as a JSON file with the values:
 Requires input CSV (with columns for Cobiont Taxname, Cobiont Taxid, and Host Biospecimen)
 
 e.g.
-host_biospecimen,cobiont_tolid,cobiont_taxname,cobiont_taxid
-SAMEA12097741,wsProSpea1.Gammaproteobacteria_1,Gammaproteobacteria bacterium Psp_hYS2021,3040533
+host_biospecimen,cobiont_taxname,cobiont_taxid
+SAMEA12097741,Gammaproteobacteria bacterium Psp_hYS2021,3040533
 
 To run use command 
     python generate_cobiont_biosampleId_using_submissions_api.py -a submission_credentials.json -p dtol -d input.csv -o output_biosamples.csv
