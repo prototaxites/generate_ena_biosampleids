@@ -17,7 +17,7 @@ host_biospecimen,cobiont_taxname,cobiont_taxid
 SAMEA12097741,Gammaproteobacteria bacterium Psp_hYS2021,3040533
 
 To run use command 
-    python generate_cobiont_biosampleId_using_submissions_api.py -a submission_credentials.json -p dtol -d input.csv -o output_biosamples.csv
+    python generate_cobiont_biosampleId_using_submissions_api.py -a dev_submission_credentials.json -p asg -d input.csv -o output.csv
 
 
 ## Using ENA API to generate metagenome biosamples (with linked binned and MAGs).
@@ -36,7 +36,16 @@ Credentials are required as a .json file with the values:
 }
 
 To run use command 
-    python get_biosampleid.py -a dev_environment.json -p asg -d test_data/input_data.csv -o test_data/output_summary.csv
+    python generate_cobiont_biosampleId_using_submissions_api.py -a dev_environment.json -p asg -d test_data/input_data.csv -o test_data/output_summary.csv
 
 e.g.
-        python get_biosampleid.py -a dev_environment.json -p asg -d test_data/glLicPygm2_primary_biosample.csv -o test_data/glLicPygm2_output_biosamples.csv
+        python generate_cobiont_biosampleId_using_submissions_api.py -a dev_environment.json -p asg -d test_data/glLicPygm2_primary_biosample.csv -o test_data/glLicPygm2_output_biosamples.csv
+
+
+SAMEA12097741,Gammaproteobacteria bacterium Psp_hYS2021,3040533
+SAMEA13602795,Alphaproteobacteria bacterium CMAR1,3040918
+
+
+
+cobiont_taxname,cobiont_taxid,host_biospecimen,biosample_accession
+Pleurocapsa sp. FMAR1,3040204,SAMEA13854150,SAMEA114098567
