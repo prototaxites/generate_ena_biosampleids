@@ -184,6 +184,17 @@ def build_sample_as_JSON(cobiont_taxon_id, cobiont_species_name, specimen_id, ro
                         "LIFESTAGE": lifestage,
                         "SYMBIONT": symbiont,
                         "row": row}
+    elif replace_policy == "LIN_FG":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                    "SCIENTIFIC_NAME": cobiont_species_name,
+                    "SEX": sex,
+                    "SPECIMEN_ID": specimen_id,
+                    "TAXON_ID": cobiont_taxon_id,
+                    "FAMILY": "NOT_SPECIFIED",
+                    "GENUS": "NOT_SPECIFIED",
+                    "LIFESTAGE": lifestage,
+                    "SYMBIONT": symbiont,
+                    "row": row}
     else:
         sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
                         "SCIENTIFIC_NAME": cobiont_species_name,
