@@ -1,6 +1,6 @@
 # Generate ENA Biosamples
 
-## Using submissions API to generate cobiont biosamples.
+## Generate cobiont biosample ids - (Uses TOL submissions API).
 
 Credentials are required as a JSON file with the values:
 {
@@ -20,7 +20,7 @@ To run use command
     python generate_cobiont_biosampleId_using_submissions_api.py -a dev_submission_credentials.json -p asg -d input.csv -o output.csv
 
 
-## Using ENA API to generate metagenome biosamples (with linked binned and MAGs).
+## Generate metagenome biosample ids (with linked binned and MAGs) - (Uses ENA API) .
 
 Under construction
 
