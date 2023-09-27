@@ -195,6 +195,66 @@ def build_sample_as_JSON(cobiont_taxon_id, cobiont_species_name, specimen_id, ro
                     "LIFESTAGE": lifestage,
                     "SYMBIONT": symbiont,
                     "row": row}
+
+    elif replace_policy == "LIN_F_TRFM_PTB":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                    "SCIENTIFIC_NAME": cobiont_species_name,
+                    "SEX": sex,
+                    "SPECIMEN_ID": specimen_id,
+                    "TAXON_ID": cobiont_taxon_id,
+                    "FAMILY": "NOT_SPECIFIED",
+                    "LIFESTAGE": lifestage,
+                    "SYMBIONT": symbiont,
+                    "TISSUE_REMOVED_FOR_BARCODING": "N",
+                    "PLATE_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "TUBE_OR_WELL_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "BARCODE_PLATE_PRESERVATIVE": "NOT_APPLICABLE",
+                    "row": row}
+    elif replace_policy == "LIN_G_TRFM_PTB":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                    "SCIENTIFIC_NAME": cobiont_species_name,
+                    "SEX": sex,
+                    "SPECIMEN_ID": specimen_id,
+                    "TAXON_ID": cobiont_taxon_id,
+                    "GENUS": "NOT_SPECIFIED",
+                    "LIFESTAGE": lifestage,
+                    "SYMBIONT": symbiont,
+                    "TISSUE_REMOVED_FOR_BARCODING": "N",
+                    "PLATE_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "TUBE_OR_WELL_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "BARCODE_PLATE_PRESERVATIVE": "NOT_APPLICABLE",
+                    "row": row}
+    elif replace_policy == "LIN_FG_TRFM_PTB":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                    "SCIENTIFIC_NAME": cobiont_species_name,
+                    "SEX": sex,
+                    "SPECIMEN_ID": specimen_id,
+                    "TAXON_ID": cobiont_taxon_id,
+                    "FAMILY": "NOT_SPECIFIED",
+                    "GENUS": "NOT_SPECIFIED",
+                    "LIFESTAGE": lifestage,
+                    "SYMBIONT": symbiont,
+                    "TISSUE_REMOVED_FOR_BARCODING": "N",
+                    "PLATE_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "TUBE_OR_WELL_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "BARCODE_PLATE_PRESERVATIVE": "NOT_APPLICABLE",
+                    "row": row}
+    elif replace_policy == "LIN_FO_TRFM_PTB":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                    "SCIENTIFIC_NAME": cobiont_species_name,
+                    "SEX": sex,
+                    "SPECIMEN_ID": specimen_id,
+                    "TAXON_ID": cobiont_taxon_id,
+                    "FAMILY": "NOT_SPECIFIED",
+                    "ORDER_OR_GROUP": "NOT_SPECIFIED",
+                    "LIFESTAGE": lifestage,
+                    "SYMBIONT": symbiont,
+                    "TISSUE_REMOVED_FOR_BARCODING": "N",
+                    "PLATE_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "TUBE_OR_WELL_ID_FOR_BARCODING": "NOT_APPLICABLE",
+                    "BARCODE_PLATE_PRESERVATIVE": "NOT_APPLICABLE",
+                    "row": row}
+
     else:
         sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
                         "SCIENTIFIC_NAME": cobiont_species_name,
@@ -294,27 +354,25 @@ def main():
         # Use details from host to build cobionts
         samples_json = build_samples_as_JSON(project_name, df, specimen_dict)
         log(samples_json)
-
         # Build cobionts
         build_success, manifest_id = build_cobiont_samples(samples_json)
-
+        log(build_success)
         if build_success:
 
             #Use manifest id to fill to get JSON with extra fields.
             fill_success, fill_response = fill_details_from_manifest_id(manifest_id)
-
             log(fill_response)
 
             if fill_success:
 
                 # Optionally validate the samples. Ignore warnings about TaxonID not being in TOLID database, TOLIDs will not be created for cobiont samples.
                 validation_success, validation_response = validate_sample_from_manifest_id(manifest_id)
+                log(validation_response)
 
                 if validation_success:
                     # Generate the biosamples.
                     generation_success, generation_response = generate_biosamples_from_manifest_id(manifest_id)
                     log(generation_response)
-
                     df_output = pd.DataFrame(columns=['cobiont_taxname','cobiont_taxid','host_biospecimen','biosample_accession'])
 
                     for i in generation_response.get("samples"):
