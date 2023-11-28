@@ -46,9 +46,6 @@ class EnaDataSource():
 <ACTION>
 <MODIFY/>
 </ACTION>
-<ACTION>
-<RELEASE/>
-</ACTION>
 </ACTIONS>
 </SUBMISSION>"""
 
@@ -76,7 +73,7 @@ class EnaDataSource():
                                  files=files,
                                  auth=HTTPBasicAuth(self.user, self.password))
         if (response.status_code != 200):
-            raise Exception(f"Cannot connect to ENA (status code '{str(response.status_code)}')'")
+            raise Exception(f"Cannot connect to ENA (status code '{str(response.status_code)}'). Details: {response.text}")
 
         return response
 
@@ -416,12 +413,15 @@ class EnaDataSource():
         updated_submission_xml_file = self._build_update_xml(manifest_id, self.contact_name,
                                                       self.contact_email)
 
+        
+
+
         xml_files = [('SAMPLE', open(updatedxmlfile, 'rb')),
                      ('SUBMISSION', open(updated_submission_xml_file, 'rb'))]
 
         response = self.post_request('/ena/submit/drop-box/submit/', xml_files)
 
-        return response.text
+        return updatedxmlfile, updated_submission_xml_file, response.text
         # try:
         #     assigned_samples = self._assign_ena_ids(samples, response.text)
 

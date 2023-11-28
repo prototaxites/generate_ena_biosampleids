@@ -60,6 +60,9 @@ def main():
     ena_datasource = EnaDataSource(enviromment_params['credentials'])
  
     df_samples = pd.read_csv(options.data)
+
+    results_data = {}
+
     for index, sample in df_samples.iterrows():
 
         biosampleid = sample['biosampleid']
@@ -72,7 +75,7 @@ def main():
   
 
         # Get accession from biosample id.
-        # biosample_id_data = ena_datasource.get_accession_from_biosampleid(biosampleid)
+        # intial_sample_data = ena_datasource.get_accession_from_biosampleid(biosampleid)
         # print(biosample_id_data)
 
 
@@ -104,10 +107,14 @@ def main():
         with open(initdataxml, 'w') as init_data_xml:
             init_data_xml.write(intial_sample_data)
 
+        # print("XML INITIAL FILE")
         # print(intial_sample_data)
 
         tree = ElementTree.parse(initdataxml)
         root = tree.getroot()
+        # ElementTree.SubElement(root, 'SAMPLE')
+
+
         sample_attributes = root.find('./SAMPLE/SAMPLE_ATTRIBUTES')
 
         host_scientific_name_included = False
@@ -187,13 +194,28 @@ def main():
 
         with open(initdataxml) as modifiedxml:
             modified_xml = modifiedxml.read()
-
+            
+        # print("XML MODIFIED FILE")
         # print(modified_xml)
+        # print(biosampleid)
+        try:
+            updatedxmlfile_path, updated_submission_xml_file_path, update_response = ena_datasource.update_existing_xml(uuid.uuid4(),modified_xml)
+            results_data[biosampleid] = "success"
+        except Exception as ex:
+            results_data[biosampleid] = f"failed: {ex}"
+    
 
-        update_response = ena_datasource.update_existing_xml(uuid.uuid4(),modified_xml)
+        # print("XML SAMPLE FILE")
+        # with open(updatedxmlfile_path) as updatedxmlfile:
+        #     print(updatedxmlfile.read())
+        # print("XML SUBMISSION FILE")
+        # with open(updated_submission_xml_file_path) as updated_submission_xml_file:
+        #     print(updated_submission_xml_file.read())
 
+        print("UPDATE_RESPONSE")
         print(update_response)
-
+        # results_data[biosampleid] = update_response
+        # print(biosampleid)
         updated_sample_data = ena_datasource.get_existing_sample_data(biosampleid)
         # print(updated_sample_data)
 
@@ -203,6 +225,12 @@ def main():
 
         with open('updated_sample_data.xml', 'w') as updat_file:
             updat_file.write(updated_sample_data)
+    
+    
+    for key, value in results_data.items():
+        print(key)
+        print(value)
+
 
 if __name__ == "__main__":
     main()

@@ -254,7 +254,51 @@ def build_sample_as_JSON(cobiont_taxon_id, cobiont_species_name, specimen_id, ro
                     "TUBE_OR_WELL_ID_FOR_BARCODING": "NOT_APPLICABLE",
                     "BARCODE_PLATE_PRESERVATIVE": "NOT_APPLICABLE",
                     "row": row}
+    
+    
+    # elif replace_policy == "SAMEA110056973":
+    #     sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+    #                     "SCIENTIFIC_NAME": cobiont_species_name,
+    #                     "SEX": sex,
+    #                     "SPECIMEN_ID": specimen_id,
+    #                     "TAXON_ID": cobiont_taxon_id,
+    #                     "LIFESTAGE": lifestage,
+    #                     "SYMBIONT": symbiont,
+    #                     "row": row}
 
+    elif replace_policy == "SAMEA9700886":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                        "SCIENTIFIC_NAME": cobiont_species_name,
+                        "SEX": sex,
+                        "SPECIMEN_ID": specimen_id,
+                        "TAXON_ID": cobiont_taxon_id,
+                        "LIFESTAGE": lifestage,
+                        "SYMBIONT": symbiont,
+                        "DECIMAL_LATITUDE": "55.94035620",
+                        "DECIMAL_LONGITUDE": "-3.16046007",
+                        "row": row}
+
+    elif replace_policy == "SAMEA9359416":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                        "SCIENTIFIC_NAME": cobiont_species_name,
+                        "SEX": sex,
+                        "SPECIMEN_ID": specimen_id,
+                        "TAXON_ID": cobiont_taxon_id,
+                        "LIFESTAGE": lifestage,
+                        "SYMBIONT": symbiont,
+                        "DECIMAL_LATITUDE": "51.47568228",
+                        "DECIMAL_LONGITUDE": "-0.18128848",
+                        "row": row}
+    elif replace_policy == "SAMEA110056973":
+        sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
+                        "SCIENTIFIC_NAME": cobiont_species_name,
+                        "SEX": sex,
+                        "SPECIMEN_ID": specimen_id,
+                        "TAXON_ID": cobiont_taxon_id,
+                        "LIFESTAGE": lifestage,
+                        "SYMBIONT": symbiont,
+                        "TIME_ELAPSED_FROM_COLLECTION_TO_PRESERVATION": "1",
+                        "row": row}
     else:
         sample_json = { "ORGANISM_PART": "**OTHER_SOMATIC_ANIMAL_TISSUE**",               
                         "SCIENTIFIC_NAME": cobiont_species_name,
@@ -353,25 +397,30 @@ def main():
     if start_build:
         # Use details from host to build cobionts
         samples_json = build_samples_as_JSON(project_name, df, specimen_dict)
+        log("A")
         log(samples_json)
         # Build cobionts
         build_success, manifest_id = build_cobiont_samples(samples_json)
+        log("B")
         log(build_success)
         if build_success:
 
             #Use manifest id to fill to get JSON with extra fields.
             fill_success, fill_response = fill_details_from_manifest_id(manifest_id)
+            log("C")
             log(fill_response)
 
             if fill_success:
 
                 # Optionally validate the samples. Ignore warnings about TaxonID not being in TOLID database, TOLIDs will not be created for cobiont samples.
                 validation_success, validation_response = validate_sample_from_manifest_id(manifest_id)
+                log("D")
                 log(validation_response)
 
                 if validation_success:
                     # Generate the biosamples.
                     generation_success, generation_response = generate_biosamples_from_manifest_id(manifest_id)
+                    log("E")
                     log(generation_response)
                     df_output = pd.DataFrame(columns=['cobiont_taxname','cobiont_taxid','host_biospecimen','biosample_accession'])
 
@@ -382,12 +431,16 @@ def main():
 
                     df_output.to_csv(output_file_name, index=False)
                 else:
+                    log("E")
                     log("Validation unsuccessful")
             else:
+                log("D")
                 log("Fill unsuccessful")         
         else:
+            log("C")
             log("Build unsuccessful")
     else:
+        log("B")
         log("Required host unavailable")
 
 if __name__ == '__main__':
