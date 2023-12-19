@@ -1,5 +1,6 @@
 /past_logs
 /old
+/old_data
 /test_output
 *.json
 *.txt
