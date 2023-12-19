@@ -64,29 +64,32 @@ N.B. The biosample IDs will be returned on running this script, but there is som
 
 ## Generate metagenome biosample ids (with linked binned and MAGs)
 
-This is to be used when you have a biospecimen and you wish to create an associated metagenome with linked binned and MAGs
+This is to be used when you have a biospecimen and you wish to create an associated metagenome with linked binned and MAGs. This requires three CSV files as input: the primary containing the metagenome details, the binned containing the binned metagenome samples, and the MAG containing the MAG samples.
 
 ### __1. Create primary CSV with the following columns:__
 
 | Column Name | Required Data |
 | -- | -- |
-|host_biospecimen|Biosample id of host specimen|
-|host_taxname|Scientific name of host specimen|
-|host_taxid| Taxonomy ID of host specimen|
-|metagenome_taxname| Scientific name of metagenome|
-|metagenome_taxid|Taxonomy ID of metagenome|
-|metagenome_tolid||
-|broad-scale environmental context||
-|local environmental context||
-|environmental medium||
-|binned_path| Path to binned samples CSV|
-|mag_path|Path to MAG samples CSV|
+|host_biospecimen|Biosample id of host specimen (e.g. SAMEA111454470)|
+|host_taxname|Scientific name of host specimen (e.g. Heterometopus palaeformis)|
+|host_taxid| Taxonomy ID of host specimen (e.g. 5965)|
+|metagenome_taxname| Scientific name of metagenome (e.g. ciliate metagenome)|
+|metagenome_taxid|Taxonomy ID of metagenome (e.g. 1969832)|
+|metagenome_tolid|(e.g. piHetPala1.metagenome)|
+|broad-scale environmental context|(e.g. aquatic biome)|
+|local environmental context|(e.g. small freshwater lake biome)|
+|environmental medium|(e.g. ciliate culture)|
+|binned_path| Path to binned samples CSV (e.g. ./binned_biosample_metadata.csv)|
+|mag_path|Path to MAG samples CSV (e.g. ./mag_biosample_metadata.csv)|
+
 
 Example CSV
 ```
-biosampleid,host scientific name,host taxid,host biosampleid,broadscale_environmental_context,local_environmental_context,environmental_medium
-SAMEA112797972,Spongilla lacustris,6055,SAMEA8580182,aquatic biome,freshwater lake biome,adult sponge tissue
+host_biospecimen,host_taxname,host_taxid,metagenome_taxname,metagenome_taxid,metagenome_tolid,broad-scale environmental context,local environmental context,environmental medium,binned_path,mag_path
+SAMEA111454470,Heterometopus palaeformis,5965,ciliate metagenome,1969832,piHetPala1.metagenome,aquatic biome,small freshwater lake biome,ciliate culture,./binned_biosample_metadata.csv,./mag_biosample_metadata.csv
 ```
+
+Primary metagenome samples being submitted to ENA are validated using the [GSC MIxS host associated](https://www.ebi.ac.uk/ena/browser/view/ERC000013) checklist.
 
 ### __2. Create binned samples CSV__
 
@@ -124,6 +127,8 @@ bin_name,tol_id,taxon,taxon_id,number of standard tRNAs extracted,assembly softw
 MAGScoT_cleanbin_000125,piHetPala1.Methanobacteriaceae_archaeon_1,Methanobacteriaceae archaeon,2099680,28,metaMDBG,No,PROKKA (version 1.14.5),PROKKA (version 1.14.5),73.94,checkM (version 1.2.1); checkM_DB (release 2015-01-16),2.4,MAGScoT (version 1.0.0); MetaBat (version 2.15-15-gd6ea400); bin3C (version 0.3.3); MaxBin (version 2.7); MetaTOR,Minimap2 (version 2.24-r1122),coverage; graph; hic-mapping,taxonomic classification defined by topology and ANI,GTDB-TK (version 2.1.1); GTDB (release 207_v2),Many fragments with little to no review of assembly other than reporting of standard assembly statistics.,Pacbio Sequel II,metagenome-assembled genome,Ciliate: Heterometopus palaeformis,aquatic biome,small freshwater lake biome,ciliate culture,ciliate metagenome
 ```
 
+Binned metagenome samples being submitted to ENA are validated using the [ENA binned metagenome](https://www.ebi.ac.uk/ena/browser/view/ERC000050) checklist.
+
 ### __3. Create MAG samples CSV__
 | Column Name | Required Data |
 | -- | -- |
@@ -159,6 +164,8 @@ Example CSV
 bin_name,tol_id,taxon,taxon_id,number of standard tRNAs extracted,assembly software,16S recovered,16S recovery software,tRNA extraction software,completeness score,completeness software,contamination score,binning software,MAG coverage software,binning parameters,taxonomic identity marker,taxonomic classification,assembly quality,sequencing method,investigation type,isolation_source,broad-scale environmental context,local environmental context,environmental medium,metagenomic source
 MAGScoT_cleanbin_000084,piHetPala1.Methanomassiliicoccaceae_archaeon_1,Methanomassiliicoccaceae archaeon,2052168,39,metaMDBG,Yes,PROKKA (version 1.14.5),PROKKA (version 1.14.5),99.19,checkM (version 1.2.1); checkM_DB (release 2015-01-16),0.81,MAGScoT (version 1.0.0); MetaBat (version 2.15-15-gd6ea400); bin3C (version 0.3.3); MaxBin (version 2.7); MetaTOR,Minimap2 (version 2.24-r1122),coverage; graph; hic-mapping,taxonomic classification defined by topology and ANI,GTDB-TK (version 2.1.1); GTDB (release 207_v2),Single contiguous sequence without gaps or ambiguities with a consensus error rate equivalent to Q50 or better,Pacbio Sequel II,metagenome-assembled genome,Ciliate: Heterometopus palaeformis,aquatic biome,small freshwater lake biome,ciliate culture,ciliate metagenome
 ```
+
+MAGs being submitted to ENA are validated using the [GSC MIMAGS](https://www.ebi.ac.uk/ena/browser/view/ERC000047) checklist.
 
 ### __4. Run using the following command:__
 ```
