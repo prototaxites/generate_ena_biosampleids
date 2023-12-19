@@ -15,6 +15,9 @@ These scripts use the ENA API, so credentials for accessing the ENA API must be 
     }
 }
 ```
+### Software requirements
+- pandas >= 2.1.4
+
 
 ## Generate cobiont biosample ids
 
