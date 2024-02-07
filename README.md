@@ -2,7 +2,7 @@
 
 These scripts are methods to generate Biosample IDs for cobionts and metagenomes.
 
-These scripts use the ENA API, so credentials for accessing the ENA API must be provided in the form of a .json file in the following format.
+These scripts use the [ENA API](https://ena-docs.readthedocs.io/en/latest/retrieval/programmatic-access.html), so credentials for accessing the ENA API must be provided in the form of a .json file in the following format.
 
 ```
 {

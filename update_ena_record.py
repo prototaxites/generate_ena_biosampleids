@@ -41,13 +41,6 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    # global project_name
-    # project_name = options.proj
-
-    # # output_file_name = options.output
-    # global replace_policy
-    # replace_policy = options.replace
-
     global log_file 
     log_file = f'cobiont_update_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
 
@@ -65,40 +58,11 @@ def main():
 
     for index, sample in df_samples.iterrows():
 
-        biosampleid = sample['biosampleid']
-        host_species_name = sample['host scientific name']
-        host_taxid = sample['host taxid']
-        host_biosampleid = sample['host biosampleid']
-        broadscale_environmental_context = sample['broadscale_environmental_context']
-        local_environmental_context = sample['local_environmental_context']
-        environmental_medium = sample['environmental_medium']
-  
+        biosampleid = sample['biosample_accession']
+        cobiont_tolid = sample['cobiont_tolid']
 
-        # Get accession from biosample id.
-        # intial_sample_data = ena_datasource.get_accession_from_biosampleid(biosampleid)
-        # print(biosample_id_data)
-
-
+        # Get existing sample data
         intial_sample_data = ena_datasource.get_existing_sample_data(biosampleid)
-        # biosample_data = ena_datasource.get_existing_sample_data(biosampleid)
-
-        # dir_ = tempfile.TemporaryDirectory()
-
-        # initdataxml = f'{dir_.name}init_data.xml'
-
-        # with open(initdataxml, 'w') as init_data_xml:
-        #     init_data_xml.write(biosample_data)
-
-        # bio_tree = ElementTree.parse(initdataxml)
-        # bio_root = bio_tree.getroot()
-        # secondary_id_element = bio_root.find('./SAMPLE/IDENTIFIERS/SECONDARY_ID')
-        # print(f"{biosampleid} - {secondary_id_element.text}")
-
-        # # # # Get sample data from accession
-        # # ers_sample_data = ena_datasource.get_existing_sample_data('ERS15992257')
-
-        # # print(intial_sample_data)
-        # # print(ers_sample_data)
 
         dir_ = tempfile.TemporaryDirectory()
 
@@ -117,75 +81,12 @@ def main():
 
         sample_attributes = root.find('./SAMPLE/SAMPLE_ATTRIBUTES')
 
-        host_scientific_name_included = False
-        host_taxid_included = False
-        sample_derived_from_included = False
-        is_primary = False
-        broadscale_included = False
-        local_env_included = False
-        env_med_included = False
-
         for attribute in sample_attributes:
             tag_node = attribute.find('./TAG')
             val_node = attribute.find('./VALUE')
 
-            # Remove organism tag that has host species name set.
-            if tag_node.text == "organism" and val_node.text == host_species_name:
-                sample_attributes.remove(attribute)
-
-            # If host scientific name tag exists, set it to new scientific name and mark it as included.
-            if tag_node.text == "host scientific name": 
-                # Set host scientific name
-                # attribute.set("host scientific name",host_species_name)
-                val_node.text = host_species_name
-                host_scientific_name_included = True
-
-            # If host taxid tag exists, set it to new taxid and mark it as included.
-            if tag_node.text == "host taxid":
-                # Set host taxid
-                # attribute.set("host taxid",host_taxid)
-                val_node.text = str(host_taxid)
-                host_taxid_included = True
-
-            if tag_node.text == "sample derived from":
-                sample_derived_from_included = True
-
-            if tag_node.text == "broad-scale environmental context":
-                broadscale_included = True
-
-            if tag_node.text == "local environmental context":
-                local_env_included = True
-
-            if tag_node.text == "environmental medium":
-                env_med_included = True
-
-            if tag_node.text == "ENA-CHECKLIST":
-
-                if val_node.text == "ERC000053":
-                    # Update checklist
-                    val_node.text = "ERC000013"
-                
-                # Add sample derived from
-                if val_node.text == "ERC000013":
-                    is_primary = True
-
-        # If not host_scientific_name not already a attribute, add it.
-        if not host_scientific_name_included:
-            add_element(sample_attributes,"host scientific name",host_species_name)
-
-        # If not host_taxid not already a attribute, add it.
-        if not host_taxid_included:
-            add_element(sample_attributes,"host taxid",str(host_taxid))
-
-        if is_primary: 
-            if not sample_derived_from_included:
-                add_element(sample_attributes,"sample derived from",host_biosampleid)
-            if not broadscale_included:
-                add_element(sample_attributes,"broad-scale environmental context",broadscale_environmental_context)
-            if not local_env_included:
-                add_element(sample_attributes,"local environmental context",local_environmental_context)
-            if not env_med_included:
-                add_element(sample_attributes,"environmental medium",environmental_medium)
+            if tag_node.text == "tolid":
+                val_node.text = cobiont_tolid
 
         ElementTree.indent(tree)
         ElementTree.dump(tree)
@@ -212,8 +113,8 @@ def main():
         # with open(updated_submission_xml_file_path) as updated_submission_xml_file:
         #     print(updated_submission_xml_file.read())
 
-        print("UPDATE_RESPONSE")
-        print(update_response)
+        # print("UPDATE_RESPONSE")
+        # print(update_response)
         # results_data[biosampleid] = update_response
         # print(biosampleid)
         updated_sample_data = ena_datasource.get_existing_sample_data(biosampleid)
