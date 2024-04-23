@@ -188,7 +188,7 @@ def main():
             'environmental medium': [primary_metagenome["environmental medium"], None],
             'ENA-CHECKLIST': ['ERC000013', None],
             'tolid': [primary_metagenome["metagenome_tolid"], None],
-            'sample derived from': [primary_metagenome["host_biospecimen"], None]
+            'sample symbiont of': [primary_metagenome["host_biospecimen"], None]
         }
 
         log("Check primary checklist")

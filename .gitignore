@@ -7,3 +7,5 @@
 INPROGRES.md
 *.csv
 *.xml
+*.yaml
+*.pyc

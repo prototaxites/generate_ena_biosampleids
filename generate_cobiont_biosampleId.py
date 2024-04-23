@@ -189,7 +189,7 @@ def main():
             'ENA-CHECKLIST': ['ERC000053', None],
             'tolid': [cobiont["cobiont_tolid"], None],
             'symbiont': ['Y', None],
-            'sample derived from': [cobiont["host_biospecimen"], None]
+            'sample symbiont of': [cobiont["host_biospecimen"], None]
         }
 
         log("Check checklist")
