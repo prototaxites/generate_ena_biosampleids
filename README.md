@@ -17,6 +17,7 @@ These scripts use the [ENA API](https://ena-docs.readthedocs.io/en/latest/retrie
 ```
 ### Software requirements
 - pandas >= 2.1.4
+- requests >= 2.28.1  
 
 
 ## Generate cobiont biosample ids

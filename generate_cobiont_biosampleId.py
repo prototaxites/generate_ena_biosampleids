@@ -176,7 +176,7 @@ def main():
         # print("lifestage")
         # print(host_sample_dict["lifestage"])
 
-    #         sex = "NOT_COLLECTED"
+    # sex = "NOT_COLLECTED"
     # lifestage = "NOT_COLLECTED"
     # symbiont = "SYMBIONT"
         # Create cobiont sample dictionary
@@ -188,6 +188,9 @@ def main():
             'host taxid': host_sample_dict["taxon_id"],
             'ENA-CHECKLIST': ['ERC000053', None],
             'tolid': [cobiont["cobiont_tolid"], None],
+            'common name': ["", None],
+            'sex': ["NOT_COLLECTED", None],
+            'lifestage': ["NOT_COLLECTED", None],
             'symbiont': ['Y', None],
             'sample symbiont of': [cobiont["host_biospecimen"], None]
         }

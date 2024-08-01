@@ -60,6 +60,9 @@ def main():
 
         biosampleid = sample['biosample_accession']
         cobiont_tolid = sample['cobiont_tolid']
+            #         'common name': ["", None],
+            # 'sex': ["NOT_COLLECTED", None],
+            # 'lifestage': ["NOT_COLLECTED", None],
 
         # Get existing sample data
         intial_sample_data = ena_datasource.get_existing_sample_data(biosampleid)
@@ -87,6 +90,16 @@ def main():
 
             if tag_node.text == "tolid":
                 val_node.text = cobiont_tolid
+
+            if tag_node.text == "common name":
+                val_node.text = ""
+
+            if tag_node.text == "sex":
+                val_node.text = "NOT_COLLECTED"
+
+            if tag_node.text == "lifestage":
+                val_node.text = "NOT_COLLECTED"
+
 
         ElementTree.indent(tree)
         ElementTree.dump(tree)
