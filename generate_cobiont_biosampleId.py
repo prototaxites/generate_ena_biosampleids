@@ -14,29 +14,15 @@ import requests
 from requests.auth import HTTPBasicAuth
 from ena_datasource import EnaDataSource
 
-
 def log(message):
-    # curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    curr_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     file_obj = open(log_file, 'a')
-    # file_obj.write(f"({curr_time}) {message}\n")
-    file_obj.write(f"{message}\n")
+    file_obj.write(f"({curr_time}) {message}\n")
     file_obj.close()
 
-def ena_checklist_to_dict(checklist_path):
-
-    with open(checklist_path) as f:
-        xml_content = f.read()
-        # print(xml_content)
-
 def copy_checklist_items(field_dict, parent_dict, child_dict):
-
     for parent_key, parent_val in parent_dict.items():
         if parent_key not in child_dict.keys():
-
-            # if parent_key == "sex":
-            #     child_dict["host sex"] = parent_val
-            # elif parent_key == "lifestage":
-            #     child_dict["host life stage"] = parent_val
             if parent_key == "organism":
                 continue
                 # Needed to prevent rendering errors on the website.
@@ -54,7 +40,7 @@ def copy_checklist_items(field_dict, parent_dict, child_dict):
                 # Is valid alternative to collected by"
                 if field_key == "collected_by":
                     continue
-                      
+     
                 # Will be added later
                 if field_key == "sample derived from":
                     continue
@@ -71,7 +57,6 @@ def copy_checklist_items(field_dict, parent_dict, child_dict):
         log("Missing mandatory fields:")
         for field in mandatory_missing:
             log(field)
-        log("")
 
     return child_dict
 
@@ -79,7 +64,7 @@ def validate_samples_with_checklist(field_dict, samples_dict):
 
     invalid_text = []
     invalid_option = []
-    
+
     validation_status = True
 
     for sample_key, sample_val in samples_dict.items():
@@ -94,12 +79,13 @@ def validate_samples_with_checklist(field_dict, samples_dict):
                     pattern = re.compile(field_dict[value_key][2])
 
                     if not pattern.match(str(value_val[0])):
-                        invalid_text.append(f"   {value_key} is set to invalid '{value_val[0]}'. Required regex is: {field_dict[value_key][2]}")
+                        invalid_text.append(f"""   {value_key} is set to invalid '{value_val[0]}'. 
+                                            Required regex is: {field_dict[value_key][2]}""")
 
                 elif field_dict[value_key][1] == 'text choice':
                     if value_val[0] not in field_dict[value_key][2]:
-                        invalid_option.append(f"   {value_key} is set to invalid option '{value_val[0]}'. Valid options are: {field_dict[value_key][2]}")
-
+                        invalid_option.append(f"""   {value_key} is set to invalid option 
+                                '{value_val[0]}'. Valid options are: {field_dict[value_key][2]}""")
 
         if invalid_text or invalid_option:
             log("================")
@@ -121,22 +107,22 @@ def validate_samples_with_checklist(field_dict, samples_dict):
 def main():
 
     parser = optparse.OptionParser()
-    parser.add_option('-a', '--api_credentials', 
-                  dest="api", 
+    parser.add_option('-a', '--api_credentials',
+                  dest="api",
                   default="",
                   )
-    parser.add_option('-p', '--project_name', 
-                  dest="proj", 
+    parser.add_option('-p', '--project_name',
+                  dest="proj",
                   default="",
-                  ) 
-    parser.add_option('-d', '--data_csv', 
-                dest="data", 
+                  )
+    parser.add_option('-d', '--data_csv',
+                dest="data",
                 default="default.csv",
-                )      
-    parser.add_option('-o', '--output_file', 
-            dest="output", 
+                )
+    parser.add_option('-o', '--output_file',
+            dest="output",
             default="",
-            )           
+            ) 
 
     (options, args) = parser.parse_args()
 
@@ -150,8 +136,6 @@ def main():
 
     with open(options.api) as json_file:
         enviromment_params = json.load(json_file)
-
-    # TODO: Check credentials in valid format.
 
     # Check connection to local tol-sdk
     ena_datasource = EnaDataSource(enviromment_params['credentials'])
@@ -171,14 +155,7 @@ def main():
         host_sample_dict = ena_datasource.get_biosample_data_biosampleid(cobiont["host_biospecimen"])
 
         cobiont_uuid = f"{uuid.uuid4()}-{project_name}-cobiont"
-        # print("sex")
-        # print(host_sample_dict["sex"])
-        # print("lifestage")
-        # print(host_sample_dict["lifestage"])
 
-    # sex = "NOT_COLLECTED"
-    # lifestage = "NOT_COLLECTED"
-    # symbiont = "SYMBIONT"
         # Create cobiont sample dictionary
         cobiont_dict = {
             'title': [cobiont_uuid, None],
@@ -195,8 +172,7 @@ def main():
             'sample symbiont of': [cobiont["host_biospecimen"], None]
         }
 
-        log("Check checklist")
-        # Download tol checklist
+        log("Check TOL checklist")
         tol_field_dict = ena_datasource.get_xml_checklist('ERC000053')
 
         log("Copy checklist items")
@@ -218,15 +194,15 @@ def main():
         ## 1. converts to xml, (creates sample id - UUID)
         ## 2. submits to ena
         ## 3. intepret response xml, appends biosampleid to sample dict
-        log(f"Generate ENA IDs for primary samples")
+        log("Generate ENA IDs for primary samples")
         primary_submission_success, primary_submission_dict = ena_datasource.generate_ena_ids_for_samples(uuid.uuid4(), primary_samples_dict)
 
         if not primary_submission_success:
-            log(f"ENA generation failed.")
+            log("ENA generation failed.")
             for val in primary_submission_dict.values():
                 log(val)
         else:
-            log(f"ENA generation succeeded")
+            log("ENA generation succeeded")
             cobiont_biosample_dict = primary_submission_dict[cobiont_uuid]
 
             samples = []
@@ -234,11 +210,10 @@ def main():
             for cobiont_biosample_dict in primary_submission_dict.values():
                 samples.append(["cobiont", cobiont_biosample_dict["tolid"][0], cobiont_biosample_dict["biosample_accession"][0]])
             
-            
             cols=['Type', 'ToLID', 'Biosample Accession']
             
             output_df = pd.DataFrame(samples, columns = cols)
-            log(f"Output biosamples")
+            log("Output biosamples")
             output_df.to_csv(output_file_name,index=False)
 
 
