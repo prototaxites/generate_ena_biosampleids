@@ -231,14 +231,14 @@ def main():
                     'binning parameters': [row["binning parameters"], None],
                     'taxonomic identity marker': [row["taxonomic identity marker"], None],
                     'taxonomic classification': [row["taxonomic classification"], None],
-                    'assembly quality': [row["assembly quality"], None],       
-                    'sequencing method': [row["sequencing method"], None],  
-                    'investigation type': [row["investigation type"], None],  
-                    'isolation_source': [row["isolation_source"], None], 
-                    'broad-scale environmental context': [row["broad-scale environmental context"], None],  
-                    'local environmental context': [row["local environmental context"], None],  
-                    'environmental medium': [row["environmental medium"], None],  
-                    'metagenomic source': [row["metagenomic source"], None]  
+                    'assembly quality': [row["assembly quality"], None],
+                    'sequencing method': [row["sequencing method"], None],
+                    'investigation type': [row["investigation type"], None],
+                    'isolation_source': [row["isolation_source"], None],
+                    'broad-scale environmental context': [row["broad-scale environmental context"], None],
+                    'local environmental context': [row["local environmental context"], None],
+                    'environmental medium': [row["environmental medium"], None],
+                    'metagenomic source': [row["metagenomic source"], None]
                 }
 
                 if binned_dict['assembly quality'][0] == "Many fragments with little to no review of assembly other than reporting of standard assembly statistics.":
@@ -373,7 +373,7 @@ def main():
 # Run update submission
 #     set host_taxid - to pull
 #         - dont pass organism name
-#         -- sample symbiont of. 
+#         -- sample symbiont of.
 
 if __name__ == "__main__":
     main()

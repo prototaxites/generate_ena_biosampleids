@@ -1,0 +1,32 @@
+[project]
+name = "enabiosamples"
+version = "0.1.0"
+description = "Methods to generate Biosample IDs for cobionts and metagenomes using ENA API."
+readme = "README.md"
+authors = [
+    { name = "Will Eagles", email = "we3@sanger.ac.uk" },
+    { name = "Jim Downie", email = "jd42@sanger.ac.uk" },
+]
+requires-python = ">=3.12"
+dependencies = [
+    "argparse>=1.4.0",
+    "jira>=3.8.0",
+    "pandas>=2.3.1",
+    "requests>=2.32.4",
+    "uuid>=1.30",
+]
+
+[project.urls]
+Homepage = "https://github.com/sanger-tol/generate_ena_biosampleids/"
+Issues = "https://github.com/sanger-tol/generate_ena_biosampleids/issues"
+
+[project.scripts]
+generate_metagenome_biosampleid = "enabiosamples.generate_metagenome_biosampleId:main"
+generate_cobiont_biosampleid = "enabiosamples.generate_cobiont_biosampleId:main"
+update_ena_record = "enabiosamples.update_ena_record:main"
+update_metagenome_ena_record = "enabiosamples.update_metagenome_ena_record:main"
+check_jira_issues = "enabiosamples.check_jira_issues:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
