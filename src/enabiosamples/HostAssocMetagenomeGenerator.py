@@ -7,8 +7,7 @@ from typing import Dict, List, Tuple, Optional, Any
 from ena_datasource import EnaDataSource
 
 
-class MetagenomeBiosampleGenerator:
-
+class HostAssocMetagenomeBiosampleGenerator:
     def __init__(
         self,
         ena_credentials: Dict[str, Any],
@@ -172,17 +171,43 @@ class MetagenomeBiosampleGenerator:
 
         return primary_dict
 
-    def create_binned_sample(
-        self, binned_data: Dict[str, Any], host_scientific_name: str, host_taxid: str
+    def create_bin_sample(
+        self,
+        binned_data: Dict[str, Any],
+        host_scientific_name: str,
+        host_taxid: str,
+        checklist: str,
     ) -> Dict[str, Any]:
         """
         Create a binned metagenome sample dictionary.
 
         Args:
-            binned_data: Dictionary containing binned sample data
-            host_scientific_name: Host scientific name
-            host_taxid: Host taxonomic ID
-
+            binned_data: Dictionary containing binned sample data with keys:
+            Dictionary containing bin/mag data with keys:
+                - tol_id: ToLID of bin
+                - taxon: taxonomic name of bin
+                - taxon_id: TaxID of bin
+                - number of standard tRNAs extracted
+                - assembly software
+                - 16S recovered
+                - 16S recovery software
+                - tRNA extraction software
+                - completeness score
+                - completeness software
+                - contamination score
+                - binning software
+                - MAG coverage software
+                - binning parameters
+                - taxonomic identity marker
+                - taxonomic classification
+                - assembly quality
+                - sequencing method
+                - investigation type
+                - isolation_source
+                - broad-scale environmental context
+                - local environmental context
+                - environmental medium
+                - metagenomic source
         Returns:
             Dictionary representing the binned sample
         """
@@ -196,7 +221,7 @@ class MetagenomeBiosampleGenerator:
             "host scientific name": [host_scientific_name, None],
             "host taxid": [host_taxid, None],
             "tolid": [binned_data["tol_id"], None],
-            "ENA-CHECKLIST": ["ERC000050", None],
+            "ENA-CHECKLIST": [checklist, None],
             "number of standard tRNAs extracted": [
                 binned_data["number of standard tRNAs extracted"],
                 None,
@@ -245,76 +270,6 @@ class MetagenomeBiosampleGenerator:
 
         return binned_dict
 
-    def create_mag_sample(
-        self, mag_data: Dict[str, Any], host_scientific_name: str, host_taxid: str
-    ) -> Dict[str, Any]:
-        """
-        Create a MAG sample dictionary.
-
-        Args:
-            mag_data: Dictionary containing MAG sample data
-            host_scientific_name: Host scientific name
-            host_taxid: Host taxonomic ID
-
-        Returns:
-            Dictionary representing the MAG sample
-        """
-        mag_dict = {
-            "title": [
-                f"{uuid.uuid4()}-{self.project_name}-{mag_data['bin_name']}",
-                None,
-            ],
-            "taxon_id": [mag_data["taxon_id"], None],
-            "scientific_name": [mag_data["taxon"], None],
-            "host scientific name": [host_scientific_name, None],
-            "host taxid": [host_taxid, None],
-            "tolid": [mag_data["tol_id"], None],
-            "ENA-CHECKLIST": ["ERC000047", None],
-            "number of standard tRNAs extracted": [
-                mag_data["number of standard tRNAs extracted"],
-                None,
-            ],
-            "assembly software": [mag_data["assembly software"], None],
-            "16S recovered": [mag_data["16S recovered"], None],
-            "16S recovery software": [mag_data["16S recovery software"], None],
-            "tRNA extraction software": [mag_data["tRNA extraction software"], None],
-            "completeness score": [mag_data["completeness score"], "%"],
-            "completeness software": [mag_data["completeness software"], None],
-            "contamination score": [mag_data["contamination score"], "%"],
-            "binning software": [mag_data["binning software"], None],
-            "MAG coverage software": [mag_data["MAG coverage software"], None],
-            "binning parameters": [mag_data["binning parameters"], None],
-            "taxonomic identity marker": [mag_data["taxonomic identity marker"], None],
-            "taxonomic classification": [mag_data["taxonomic classification"], None],
-            "assembly quality": [mag_data["assembly quality"], None],
-            "sequencing method": [mag_data["sequencing method"], None],
-            "investigation type": [mag_data["investigation type"], None],
-            "isolation_source": [mag_data["isolation_source"], None],
-            "broad-scale environmental context": [
-                mag_data["broad-scale environmental context"],
-                None,
-            ],
-            "local environmental context": [
-                mag_data["local environmental context"],
-                None,
-            ],
-            "environmental medium": [mag_data["environmental medium"], None],
-            "metagenomic source": [mag_data["metagenomic source"], None],
-        }
-
-        if (
-            mag_dict["assembly quality"][0]
-            == "Many fragments with little to no review of assembly other than reporting of standard assembly statistics."
-        ):
-            mag_dict["assembly quality"][0] = (
-                "Many fragments with little to no review of assembly other than reporting of standard assembly statistics"
-            )
-
-        if mag_dict["completeness score"][0] == 100.0:
-            mag_dict["completeness score"][0] = 100
-
-        return mag_dict
-
     def process_primary_metagenome(
         self, primary_data: Dict[str, Any]
     ) -> Tuple[bool, Dict[str, Any], Dict[str, Any]]:
@@ -355,12 +310,13 @@ class MetagenomeBiosampleGenerator:
 
         return validation_passed, primary_sample_dict, host_sample_dict
 
-    def process_binned_samples(
+    def process_bin_samples(
         self,
         binned_data_list: List[Dict[str, Any]],
         primary_dict: Dict[str, Any],
         host_scientific_name: str,
         host_taxid: str,
+        checklist: str,
     ) -> Tuple[bool, Dict[str, Any]]:
         """
         Process binned metagenome samples.
@@ -377,13 +333,13 @@ class MetagenomeBiosampleGenerator:
         self.log("Processing binned samples")
 
         # Get binned metagenome checklist
-        bm_field_dict = self.ena_datasource.get_xml_checklist("ERC000050")
+        bm_field_dict = self.ena_datasource.get_xml_checklist(checklist)
 
         binned_samples_dict = {}
 
         for i, binned_data in enumerate(binned_data_list):
-            binned_dict = self.create_binned_sample(
-                binned_data, host_scientific_name, host_taxid
+            binned_dict = self.create_bin_sample(
+                binned_data, host_scientific_name, host_taxid, checklist
             )
 
             self.log(f"Copy checklist items for binned {i}")
@@ -399,51 +355,6 @@ class MetagenomeBiosampleGenerator:
         )
 
         return validation_passed, binned_samples_dict
-
-    def process_bin_samples(
-        self,
-        mag_data_list: List[Dict[str, Any]],
-        primary_dict: Dict[str, Any],
-        host_scientific_name: str,
-        host_taxid: str,
-    ) -> Tuple[bool, Dict[str, Any]]:
-        """
-        Process MAG samples.
-
-        Args:
-            mag_data_list: List of dictionaries containing MAG sample data
-            primary_dict: Primary sample dictionary
-            host_scientific_name: Host scientific name
-            host_taxid: Host taxonomic ID
-
-        Returns:
-            Tuple of (validation_success, mag_samples_dict)
-        """
-        self.log("Processing MAG samples")
-
-        # Get MAG checklist
-        mag_field_dict = self.ena_datasource.get_xml_checklist("ERC000047")
-
-        mag_samples_dict = {}
-
-        for i, mag_data in enumerate(mag_data_list):
-            mag_dict = self.create_mag_sample(
-                mag_data, host_scientific_name, host_taxid
-            )
-
-            self.log(f"Copy checklist items for MAG {i}")
-            mag_sample_dict = self.copy_checklist_items(
-                mag_field_dict, primary_dict, mag_dict
-            )
-            mag_samples_dict[mag_sample_dict["title"][0]] = mag_sample_dict
-
-        # Validate
-        self.log("Validate MAG checklist items")
-        validation_passed = self.validate_samples_with_checklist(
-            mag_field_dict, mag_samples_dict
-        )
-
-        return validation_passed, mag_samples_dict
 
     def generate_biosample_ids(
         self,
@@ -482,19 +393,21 @@ class MetagenomeBiosampleGenerator:
         mag_validation_passed = True
 
         if binned_data_list:
-            binned_validation_passed, binned_samples_dict = self.process_binned_samples(
+            binned_validation_passed, binned_samples_dict = self.process_bin_samples(
                 binned_data_list,
                 primary_sample_dict,
                 primary_data["host_taxname"],
                 primary_data["host_taxid"],
+                "ERC000050",
             )
 
         if mag_data_list:
-            mag_validation_passed, mag_samples_dict = self.process_mag_samples(
+            mag_validation_passed, mag_samples_dict = self.process_bin_samples(
                 mag_data_list,
                 primary_sample_dict,
                 primary_data["host_taxname"],
                 primary_data["host_taxid"],
+                "ERC000047",
             )
 
         if not (

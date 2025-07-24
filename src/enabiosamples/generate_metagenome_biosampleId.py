@@ -14,7 +14,7 @@ import sys
 from typing import Any, Dict, List, Optional
 
 import pandas as pd
-from MetagenomeGenerator import MetagenomeBiosampleGenerator
+from MetagenomeGenerator import HostAssocMetagenomeBiosampleGenerator
 
 def validate_primary_csv_columns(df: pd.DataFrame) -> None:
     """Validate that the primary CSV has required columns."""
@@ -255,7 +255,7 @@ def main():
     primary_df = pd.read_csv(args.primary_csv)
     validate_primary_csv_columns(primary_df)
 
-    generator = MetagenomeBiosampleGenerator(
+    generator = HostAssocMetagenomeBiosampleGenerator(
         ena_credentials=credentials,
         project_name=args.project,
     )
@@ -265,7 +265,6 @@ def main():
         generator=generator,
         output_file=args.output,
     )
-
 
 if __name__ == "__main__":
     main()
