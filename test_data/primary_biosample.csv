@@ -1,0 +1,2 @@
+host_biospecimen,host_taxname,host_taxid,metagenome_taxname,metagenome_taxid,metagenome_tolid,broad-scale environmental context,local environmental context,environmental medium,binned_path,mag_path
+SAMEA8579711,Vulpes vulpes,9627,mammal metagenome,3127350,mVulVul1.metagenome,arid biome,sclerophyllous forest biome,adult mammal tissue,./binned_biosample.csv,./mag_biosample.csv

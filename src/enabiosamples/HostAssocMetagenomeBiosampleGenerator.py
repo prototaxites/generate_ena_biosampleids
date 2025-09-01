@@ -10,11 +10,11 @@ from ena_datasource import EnaDataSource
 class HostAssocMetagenomeBiosampleGenerator:
     def __init__(
         self,
-        ena_credentials: Dict[str, Any],
+        ena_datasource: EnaDataSource,
         project_name: str,
         log_file: Optional[str] = None,
     ):
-        self.ena_datasource = EnaDataSource(ena_credentials)
+        self.ena_datasource = ena_datasource
         self.project_name = project_name
         self.log_file = (
             log_file
@@ -44,13 +44,40 @@ class HostAssocMetagenomeBiosampleGenerator:
             Updated child dictionary with copied fields
         """
         for parent_key, parent_val in parent_dict.items():
-            if parent_key not in child_dict.keys():
+            if parent_key not in child_dict:
                 if parent_key == "sex":
-                    child_dict["host sex"] = parent_val
+                    child_val = parent_val.copy()
+                    child_val[0] = child_val[0].lower()
+
+                    if "hermaphrodite" in child_val[0]:
+                        child_val[0] = "hermaphrodite"
+                    elif "sexual morph" in child_val[0]:
+                        child_val[0] = "other"
+
+                    child_dict["host sex"] = child_val
+
                 elif parent_key == "lifestage":
                     child_dict["host life stage"] = parent_val
+
+                elif parent_key in [
+                    "geographic location (latitude)",
+                    "geographic location (longitude)",
+                ]:
+                    child_val = parent_val.copy()
+
+                    try:
+                        coordinate = float(child_val[0])
+                        child_val[0] = f"{coordinate:.2f}"
+                    except ValueError:
+                        self.log(
+                            f"Warning: Could not parse {parent_key} value '{child_val[0]}' as a number"
+                        )
+
+                    child_dict[parent_key] = child_val
+
                 elif parent_key == "organism":
-                    continue  # Needed to prevent rendering errors on the website
+                    continue
+
                 else:
                     child_dict[parent_key] = parent_val
 
@@ -60,25 +87,23 @@ class HostAssocMetagenomeBiosampleGenerator:
         optional_missing = []
 
         for field_key, field_val in field_dict.items():
-            if field_key not in child_dict.keys():
-                if field_val[0] in ["mandatory"]:
-                    if (
-                        field_key == "collected_by"
-                        or field_key == "sample derived from"
-                    ):
+            if field_key not in child_dict:
+                requirement_level = field_val[0]
+
+                if requirement_level == "mandatory":
+                    if field_key in ["collected_by", "sample derived from"]:
                         continue
                     mandatory_missing.append(field_key)
-                elif field_val[0] in ["recommended"]:
+
+                elif requirement_level == "recommended":
                     recommended_missing.append(field_key)
-                elif field_val[0] in ["optional"]:
+                elif requirement_level == "optional":
                     optional_missing.append(field_key)
 
-        # Log missing mandatory fields
         if mandatory_missing:
             self.log("Missing mandatory fields:")
             for field in mandatory_missing:
                 self.log(f"  {field}")
-            self.log("")
 
         return child_dict
 
@@ -477,34 +502,15 @@ class HostAssocMetagenomeBiosampleGenerator:
                 self.log("Biosample accession not returned for primary metagenome")
                 return False, {"error": "Primary biosample accession not available"}
 
-        # Build summary results
-        summary = [
-            [
-                "primary",
-                primary_metagenome_dict["tolid"][0],
-                primary_metagenome_dict["biosample_accession"][0],
-            ]
-        ]
-
-        for key, val in binned_mag_submission_dict.items():
-            sample_type = val["title"][0].split("-")[-1]  # Extract type from title
-            summary.append(
-                [sample_type, val["tolid"][0], val["biosample_accession"][0]]
-            )
-
-        results = {
-            "primary": primary_metagenome_dict,
-            "binned": {
-                k: v
-                for k, v in binned_mag_submission_dict.items()
-                if "ERC000050" in str(v.get("ENA-CHECKLIST", []))
+        summary = {
+            "primary": {
+                "tolid": primary_metagenome_dict["tolid"][0],
+                "biosample": primary_metagenome_dict["biosample_accession"][0],
             },
-            "mags": {
-                k: v
-                for k, v in binned_mag_submission_dict.items()
-                if "ERC000047" in str(v.get("ENA-CHECKLIST", []))
-            },
-            "summary": summary,
+            "magsbins": [
+                {"tolid": val["tolid"][0], "biosample": val["biosample_accession"][0]}
+                for key, val in binned_mag_submission_dict.items()
+            ],
         }
 
-        return True, results
+        return True, summary

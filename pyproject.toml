@@ -10,8 +10,10 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "argparse>=1.4.0",
+    "click>=8.2.1",
     "jira>=3.8.0",
     "pandas>=2.3.1",
+    "polars>=1.32.3",
     "requests>=2.32.4",
     "uuid>=1.30",
 ]
@@ -21,7 +23,7 @@ Homepage = "https://github.com/sanger-tol/generate_ena_biosampleids/"
 Issues = "https://github.com/sanger-tol/generate_ena_biosampleids/issues"
 
 [project.scripts]
-generate_metagenome_biosampleid = "enabiosamples.generate_metagenome_biosampleId:main"
+metagenome_biosamples = "enabiosamples.metagenome_biosamples:main"
 generate_cobiont_biosampleid = "enabiosamples.generate_cobiont_biosampleId:main"
 update_ena_record = "enabiosamples.update_ena_record:main"
 update_metagenome_ena_record = "enabiosamples.update_metagenome_ena_record:main"
