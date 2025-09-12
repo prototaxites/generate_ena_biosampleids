@@ -8,6 +8,8 @@ These scripts use the [ENA API](https://ena-docs.readthedocs.io/en/latest/retrie
 {
     "credentials": {
         "uri": <ENA WEBSITE>,
+        // Optional: use a separate API URI to push to. Useful for testing with the development API.
+        "set_uri": <ENA WEBSITE>
         "user": <ENA USERNAME>,
         "password": <ENA PASSWORD>,
         "contact_name": <ENA CONTACT NAME>,
