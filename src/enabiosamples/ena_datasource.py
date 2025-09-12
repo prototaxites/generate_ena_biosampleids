@@ -41,8 +41,13 @@ class EnaDataSource:
 </SUBMISSION>"""
 
     def __init__(self, config: Dict, debug: True):
-        self.get_uri = "https://www.ebi.ac.uk"
-        self.set_uri = config["uri"]
+        self.get_uri = config["uri"]
+
+        if config["set_uri"]:
+            self.set_uri = config["set_uri"]
+        else:
+            self.set_uri = config["uri"]
+
         self.user = config["user"]
         self.password = config["password"]
         self.contact_name = config["contact_name"]
