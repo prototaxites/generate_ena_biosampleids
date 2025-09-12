@@ -102,7 +102,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "argparse", specifier = ">=1.4.0" },
-    { name = "click", specifier = ">=8.2.1" },
+    { name = "click", specifier = ">=8.1.7" },
     { name = "jira", specifier = ">=3.8.0" },
     { name = "pandas", specifier = ">=2.3.1" },
     { name = "polars", specifier = ">=1.32.3" },
