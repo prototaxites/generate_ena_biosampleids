@@ -14,7 +14,9 @@ import sys
 import click
 import polars as pl
 from ena_datasource import EnaDataSource
-from HostAssocMetagenomeBiosampleGenerator import HostAssocMetagenomeBiosampleGenerator
+from enabiosamples.HostAssocMetagenomeBiosampleGenerator import (
+    HostAssocMetagenomeBiosampleGenerator,
+)
 
 
 def read_bin_csv(path: str) -> pl.DataFrame:

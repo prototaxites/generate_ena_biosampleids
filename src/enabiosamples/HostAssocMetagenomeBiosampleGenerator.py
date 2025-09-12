@@ -4,7 +4,7 @@ import uuid
 import datetime
 import re
 from typing import Dict, List, Tuple, Optional, Any
-from ena_datasource import EnaDataSource
+from enabiosamples.ena_datasource import EnaDataSource
 
 
 class HostAssocMetagenomeBiosampleGenerator:
