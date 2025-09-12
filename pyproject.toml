@@ -14,7 +14,7 @@ dependencies = [
     "jira>=3.8.0",
     "pandas>=2.3.1",
     "polars>=1.32.3",
-    "requests>=2.32.4",
+    "requests>=2.31.0",
     "uuid>=1.30",
 ]
 

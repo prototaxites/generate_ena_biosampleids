@@ -106,7 +106,7 @@ requires-dist = [
     { name = "jira", specifier = ">=3.8.0" },
     { name = "pandas", specifier = ">=2.3.1" },
     { name = "polars", specifier = ">=1.32.3" },
-    { name = "requests", specifier = ">=2.32.4" },
+    { name = "requests", specifier = ">=2.31.0" },
     { name = "uuid", specifier = ">=1.30" },
 ]
 
