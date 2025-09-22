@@ -43,7 +43,7 @@ class EnaDataSource:
     def __init__(self, config: Dict, debug: True):
         self.get_uri = config["uri"]
 
-        if config["set_uri"]:
+        if config.get("set_uri", None):
             self.set_uri = config["set_uri"]
         else:
             self.set_uri = config["uri"]
