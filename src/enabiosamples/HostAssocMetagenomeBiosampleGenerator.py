@@ -34,25 +34,25 @@ class HostAssocMetagenomeBiosampleGenerator:
 
     def copy_checklist_items(
         self,
-        field_dict: Dict[str, Any],
-        parent_dict: Dict[str, Any],
-        child_dict: Dict[str, Any],
+        checklist_dict: Dict[str, Any],
+        host_dict: Dict[str, Any],
+        primary_mg_dict: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
         Copy checklist items from parent to child dictionary and validate mandatory fields.
 
         Args:
-            field_dict: Dictionary containing field definitions from checklist
-            parent_dict: Parent dictionary to copy from
-            child_dict: Child dictionary to copy to
+            checklist_dict: Dictionary containing field definitions from checklist
+            host_dict: Parent dictionary to copy from
+            primary_mg_dict: Child dictionary to copy to
 
         Returns:
             Updated child dictionary with copied fields
         """
-        for parent_key, parent_val in parent_dict.items():
-            if parent_key not in child_dict:
-                if parent_key == "sex":
-                    child_val = parent_val.copy()
+        for host_key, host_val in host_dict.items():
+            if host_key not in primary_mg_dict and host_key in checklist_dict:
+                if host_key == "sex":
+                    child_val = host_val.copy()
                     child_val[0] = child_val[0].lower()
 
                     if "hermaphrodite" in child_val[0]:
@@ -60,40 +60,40 @@ class HostAssocMetagenomeBiosampleGenerator:
                     elif "sexual morph" in child_val[0]:
                         child_val[0] = "other"
 
-                    child_dict["host sex"] = child_val
+                    primary_mg_dict["host sex"] = child_val
 
-                elif parent_key == "lifestage":
-                    child_dict["host life stage"] = parent_val
+                elif host_key == "lifestage":
+                    primary_mg_dict["host life stage"] = host_val
 
-                elif parent_key in [
+                elif host_key in [
                     "geographic location (latitude)",
                     "geographic location (longitude)",
                 ]:
-                    child_val = parent_val.copy()
+                    child_val = host_val.copy()
 
                     try:
                         coordinate = float(child_val[0])
                         child_val[0] = f"{coordinate:.2f}"
                     except ValueError:
                         self.log(
-                            f"Warning: Could not parse {parent_key} value '{child_val[0]}' as a number"
+                            f"Warning: Could not parse {host_val} value '{child_val[0]}' as a number"
                         )
 
-                    child_dict[parent_key] = child_val
+                    primary_mg_dict[host_val] = child_val
 
-                elif parent_key == "organism":
+                elif host_val == "organism":
                     continue
 
                 else:
-                    child_dict[parent_key] = parent_val
+                    primary_mg_dict[host_key] = host_val
 
         # Check for missing fields
         mandatory_missing = []
         recommended_missing = []
         optional_missing = []
 
-        for field_key, field_val in field_dict.items():
-            if field_key not in child_dict:
+        for field_key, field_val in checklist_dict.items():
+            if field_key not in primary_mg_dict:
                 requirement_level = field_val[0]
 
                 if requirement_level == "mandatory":
@@ -111,7 +111,7 @@ class HostAssocMetagenomeBiosampleGenerator:
             for field in mandatory_missing:
                 self.log(f"  {field}")
 
-        return child_dict
+        return primary_mg_dict
 
     def validate_samples_with_checklist(
         self, field_dict: Dict[str, Any], samples_dict: Dict[str, Any]
