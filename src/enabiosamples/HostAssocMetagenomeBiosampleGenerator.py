@@ -79,7 +79,7 @@ class HostAssocMetagenomeBiosampleGenerator:
                             f"Warning: Could not parse {host_val} value '{child_val[0]}' as a number"
                         )
 
-                    primary_mg_dict[host_val] = child_val
+                    primary_mg_dict[host_key] = child_val
 
                 elif host_val == "organism":
                     continue
